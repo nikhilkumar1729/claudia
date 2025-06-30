@@ -146,3 +146,93 @@ These agents are provided under the same license as the Claudia project. See the
 <div align="center">
   <strong>Built with ❤️ by the Claudia community</strong>
 </div> 
+import React, { useState } from 'react';
+import { Box, Paper, TextField, IconButton, Typography, List, ListItem, CircularProgress } from '@mui/material';
+import SendIcon from '@mui/icons-material/Send';
+import Avatar from '@mui/material/Avatar';
+
+const CLAUDE_AVATAR = "https://upload.wikimedia.org/wikipedia/commons/thumb/0/09/Anthropic_logo.svg/1200px-Anthropic_logo.svg.png";
+
+export default function ClaudeInterface() {
+  const [messages, setMessages] = useState([
+    { from: "claude", text: "Hello! How can I help you with your internal tools today?" }
+  ]);
+  const [input, setInput] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  // Mock Claude response
+  const sendMessage = async (msg) => {
+    setLoading(true);
+    setMessages((prev) => [...prev, { from: "user", text: msg }]);
+    setInput('');
+    // Simulate API call
+    setTimeout(() => {
+      setMessages((prev) => [
+        ...prev,
+        { from: "claude", text: "This is a mock response from Claude. (Integrate with Claude API for real answers.)" }
+      ]);
+      setLoading(false);
+    }, 1200);
+  };
+
+  const handleSend = () => {
+    if (input.trim()) sendMessage(input.trim());
+  };
+
+  const handleInputKeyDown = (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSend();
+    }
+  };
+
+  return (
+    <Box sx={{ width: 420, margin: "auto", mt: 6 }}>
+      <Paper elevation={4} sx={{ p: 2, minHeight: 540, display: "flex", flexDirection: "column" }}>
+        <Typography variant="h6" sx={{ mb: 2, textAlign: "center" }}>
+          Claude Internal Tool Assistant
+        </Typography>
+        <List sx={{ flex: 1, overflowY: "auto", mb: 1 }}>
+          {messages.map((msg, idx) => (
+            <ListItem key={idx} sx={{ alignItems: "flex-start" }}>
+              <Avatar
+                src={msg.from === "claude" ? CLAUDE_AVATAR : undefined}
+                sx={{ mr: 2, bgcolor: msg.from === "user" ? "primary.main" : "grey.100", color: "white" }}
+              >
+                {msg.from === "user" ? "U" : "C"}
+              </Avatar>
+              <Box>
+                <Typography variant="body2" color="textSecondary">
+                  {msg.from === "user" ? "You" : "Claude"}
+                </Typography>
+                <Typography variant="body1">{msg.text}</Typography>
+              </Box>
+            </ListItem>
+          ))}
+          {loading && (
+            <ListItem>
+              <CircularProgress size={20} sx={{ mr: 2 }} />
+              <Typography variant="body2">Claude is typing…</Typography>
+            </ListItem>
+          )}
+        </List>
+        <Box sx={{ display: "flex", gap: 1 }}>
+          <TextField
+            fullWidth
+            multiline
+            minRows={1}
+            maxRows={4}
+            placeholder="Type your question…"
+            value={input}
+            onChange={e => setInput(e.target.value)}
+            onKeyDown={handleInputKeyDown}
+            disabled={loading}
+          />
+          <IconButton color="primary" onClick={handleSend} disabled={!input.trim() || loading}>
+            <SendIcon />
+          </IconButton>
+        </Box>
+      </Paper>
+    </Box>
+  );
+}
